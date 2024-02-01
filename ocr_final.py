@@ -197,3 +197,96 @@ grouped_boxes.append(line_text)
 # 정렬된 바운딩 박스의 텍스트 출력
 for line_text in grouped_boxes:
     print(line_text)
+
+import re
+
+employee_name_match = re.search(r'Employee Name : (.+)', grouped_boxes[0])
+employee_name = employee_name_match.group(1) if employee_name_match else None
+print(employee_name) #Jerry
+
+manager_name_match = re.search(r'Manager Name : (.+)', grouped_boxes[1])
+manager_name = manager_name_match.group(1) if manager_name_match else None
+print(manager_name) #Melinda
+
+weekStart_match = re.search(r'Week Starting : (.+)', grouped_boxes[2])
+weekStart = weekStart_match.group(1) if weekStart_match else None
+print(weekStart) #6/23/2022
+
+# Assuming grouped_boxes is a list of strings
+combined_text = '\n'.join(grouped_boxes)
+
+# Use regular expressions to extract the relevant portion
+info_match = re.search(r'Date.*Total Hours\n(.*?)Total Hours', combined_text, re.DOTALL)
+info = info_match.group(0) if info_match else None
+
+print("info match: ", info_match)
+print("info: ", info)
+print()
+
+# Now 'extracted_text' contains the portion you want to process further
+
+# Split the extracted text into lines
+lines = info.strip().split('\n')
+
+# Assuming the header is in the first line and the data starts from the second line
+header = re.split(r'\s+', lines[0])
+
+# Combine consecutive elements with similar prefixes
+grouped_header = []
+current_group = []
+
+for element in header:
+    # Check if the current element is 'Time' or 'Total'
+    if element in ['In', 'Out', 'Hours']:
+        current_group.append(element)
+    # Check if there's a current group, and the current element starts with the last element in the group
+    elif current_group and element.startswith(current_group[-1]):
+        current_group[-1] += ' ' + element
+    else:
+        # Combine consecutive elements with similar prefixes only when not 'Time' or 'Total'
+        if not any(prefix in element for prefix in ['In', 'Out', 'Hours']):
+            grouped_header.append(' '.join(current_group))
+            current_group = [element]
+        else:
+            current_group.append(element)
+
+# Add the last group
+grouped_header.append(' '.join(current_group))
+list = grouped_header[1:]
+
+print(current_group)
+print(list)
+
+header = []
+
+# 리스트를 순회하면서 Time In과 Time Out에 "_2"를 붙여서 새로운 리스트에 추가
+for i in list:
+    if i in header:
+        header.append(i + '_2')
+    else:
+        header.append(i)
+
+print(header)
+
+data = [re.split(r'\s+', line) for line in lines[1:-1]]
+
+print("header: ", header)
+print("data: ", data)
+print()
+
+# Access the data by column
+for row in data:
+    print(
+        f"Date: {row[header.index('Date')]}, Day: {row[header.index('Day')]}, "
+        f"Time In: {row[header.index('Time In')]}, Time Out: {row[header.index('Time Out')]}, "
+        f"Time In_2: {row[header.index('Time In_2')]}, Time Out_2: {row[header.index('Time Out_2')]}, "
+        f"Total Hours: {row[header.index('Total Hours')]}"
+    )
+
+employeeSign_match = re.search(r'Employee Signature :  (.+)', grouped_boxes[12])
+employeeSign = employeeSign_match.group(1) if employeeSign_match else None
+print(employeeSign) #Jerry
+
+managerSign_match = re.search(r'Manager Signature : (.+)', grouped_boxes[14])
+managerSign = managerSign_match.group(1) if managerSign_match else None
+print(managerSign) #Melinda
